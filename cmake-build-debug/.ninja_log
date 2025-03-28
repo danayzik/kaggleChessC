@@ -1,7 +1,0 @@
-# ninja log v6
-36	2083	7591890974743226	CMakeFiles/chessBot.dir/main.cpp.obj	10c88c0ef40b8a26
-39	2371	7591890974773237	CMakeFiles/chessBot.dir/search.cpp.obj	8582514635f8bec2
-56	1805	7591152896919093	CMakeFiles/chessBot.dir/evaluation.cpp.obj	630f7cf00d947328
-2372	3641	7591890998109733	chessBot.exe	484b679cf5818f0b
-26	411	7648775102462878	build.ninja	ec7324a2063d08b2
-17	306	7582489643236508	CMakeFiles/chessBot.dir/game_tables.cpp.obj	3eb5cf97c502877a

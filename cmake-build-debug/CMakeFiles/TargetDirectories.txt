@@ -1,3 +1,0 @@
-C:/Users/danay/CLionProjects/chessBot/cmake-build-debug/CMakeFiles/chessBot.dir
-C:/Users/danay/CLionProjects/chessBot/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/danay/CLionProjects/chessBot/cmake-build-debug/CMakeFiles/rebuild_cache.dir
