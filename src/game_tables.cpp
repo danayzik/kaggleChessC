@@ -1,4 +1,4 @@
-#include "game_tables.h"
+#include "../include/game_tables.h"
 
 
 

@@ -1,7 +1,7 @@
 #include <vector>
 #include <map>
-#include "evaluation.h"
-#include "game_tables.h"
+#include "../include/evaluation.h"
+#include "../include/game_tables.h"
 
 
 std::array<int, 2> scores;

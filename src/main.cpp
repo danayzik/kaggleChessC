@@ -1,6 +1,6 @@
-#include "chess.hpp"
-#include "game_tables.h"
-#include "search.h"
+#include "../include/chess.hpp"
+#include "../include/game_tables.h"
+#include "../include/search.h"
 
 Board myBoard;
 bool maximizeSearch;

@@ -1,7 +1,7 @@
 #include <algorithm>
-#include "evaluation.h"
-#include "search.h"
-#include "transposition_table.cpp"
+#include "../include/evaluation.h"
+#include "../include/search.h"
+#include "../include/transposition_table.h"
 #include <iostream>
 #include <chrono>
 
