@@ -12,6 +12,7 @@ add_executable(chessBot
         src/search.cpp
         src/game_tables.cpp        # If search.cpp is involved, include it too
         src/transposition_table.cpp
+        include/engine.h
 )
 
 # Add any additional libraries or dependencies here if needed
