@@ -5,6 +5,7 @@
 #include <iostream>
 #include <chrono>
 
+using namespace transpositions;
 TranspositionTable tt(10000, 7000);
 Move pv_move = Move();
 int currDepth = -1;

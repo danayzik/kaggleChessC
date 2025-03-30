@@ -28,10 +28,10 @@ void HeuristicEvaluator::incPestoValues(int colorIndex, int pc, int sqrIndex){
 
 
 
-void HeuristicEvaluator::addPassedPawnBonus(const Board& board, Square pawnSquare, Color color){
-    int colorIndex = static_cast<int>(color);
-    bool isWhite = color == Color::WHITE;
-    Bitboard enemyPawns = board.pieces(PieceType::PAWN, ~color);
+void HeuristicEvaluator::addPassedPawnBonus(const Board& board, Square pawnSquare){
+    int colorIndex = static_cast<int>(workingColor);
+    bool isWhite = workingColor == Color::WHITE;
+    Bitboard enemyPawns = board.pieces(PieceType::PAWN, ~workingColor);
     File pawnFile = pawnSquare.file();
     Bitboard pawnFileBits = Bitboard(pawnFile);
     Bitboard tripleFiles = tripleFileMask(pawnFileBits, pawnFile);
@@ -44,8 +44,8 @@ void HeuristicEvaluator::addPassedPawnBonus(const Board& board, Square pawnSquar
 
 }
 
-void HeuristicEvaluator::addMobilityBonus(const Board& board, Bitboard controlledSquares, Color color, bool isKing){
-    int colorIndex = static_cast<int>(color);
+void HeuristicEvaluator::addMobilityBonus(const Board& board, Bitboard controlledSquares, bool isKing){
+    int colorIndex = static_cast<int>(workingColor);
     int kingMult = 1 - 2 * isKing;
     Bitboard occ = board.occ();
     Bitboard canReachBits = controlledSquares & (~occ);
@@ -53,11 +53,11 @@ void HeuristicEvaluator::addMobilityBonus(const Board& board, Bitboard controlle
     scores[colorIndex] += squareCount*mobilityBonus*kingMult;
 }
 
-void HeuristicEvaluator::addOutpostBonus(const Board& board, Square knightSquare, Color color){
-    int colorIndex = static_cast<int>(color);
-    bool isWhite = color == Color::WHITE;
+void HeuristicEvaluator::addOutpostBonus(const Board& board, Square knightSquare){
+    int colorIndex = static_cast<int>(workingColor);
+    bool isWhite = workingColor == Color::WHITE;
     // Open File
-    Bitboard friendlyPawns = board.pieces(PieceType::PAWN, color);
+    Bitboard friendlyPawns = board.pieces(PieceType::PAWN, workingColor);
     File knightFile = knightSquare.file();
     Bitboard knightFileBits = Bitboard(knightFile);
     int halfOpenFile = (knightFileBits & friendlyPawns) == 0;
@@ -70,7 +70,7 @@ void HeuristicEvaluator::addOutpostBonus(const Board& board, Square knightSquare
     Bitboard friendlyPawnLeftAttacks = isWhite
                                        ? attacks::pawnLeftAttacks<Color::WHITE>(friendlyPawns)
                                        : attacks::pawnLeftAttacks<Color::BLACK>(friendlyPawns);
-    Bitboard friendlyPawnRightAttacks = (color == Color::WHITE)
+    Bitboard friendlyPawnRightAttacks = (workingColor == Color::WHITE)
                                         ? attacks::pawnRightAttacks<Color::WHITE>(friendlyPawns)
                                         : attacks::pawnRightAttacks<Color::BLACK>(friendlyPawns);
     Bitboard pawnProtection = friendlyPawnLeftAttacks | friendlyPawnRightAttacks;
@@ -78,7 +78,7 @@ void HeuristicEvaluator::addOutpostBonus(const Board& board, Square knightSquare
     int isDefendedByPawn = (knightBoard & pawnProtection) != 0;
 
     // Safe From Pawns
-    Bitboard enemyPawns = board.pieces(PieceType::PAWN, ~color);
+    Bitboard enemyPawns = board.pieces(PieceType::PAWN, ~workingColor);
     Bitboard ranksInfrontMask = getRanksInfront(knightRank, isWhite);
     Bitboard sidesMask = sideFilesMask(knightFileBits, knightFile);
     Bitboard denyingPawns = sidesMask & enemyPawns & ranksInfrontMask;
@@ -87,21 +87,21 @@ void HeuristicEvaluator::addOutpostBonus(const Board& board, Square knightSquare
     scores[colorIndex] += (safeFromPawns && isDefendedByPawn && isInEnemyTerritory && halfOpenFile)*outPostBonus;
 }
 
-void HeuristicEvaluator::addRookOnOpenFile(const Board& board, Square rookSquare, Color color){
-    int colorIndex = static_cast<int>(color);
-    Bitboard friendlyPawns = board.pieces(PieceType::PAWN, color);
-    Bitboard enemyPawns = board.pieces(PieceType::PAWN, ~color);
+void HeuristicEvaluator::addRookOnOpenFile(const Board& board, Square rookSquare){
+    int colorIndex = static_cast<int>(workingColor);
+    Bitboard friendlyPawns = board.pieces(PieceType::PAWN, workingColor);
+    Bitboard enemyPawns = board.pieces(PieceType::PAWN, ~workingColor);
     Bitboard rookFile = Bitboard(rookSquare.file());
     int halfOpen = (rookFile & friendlyPawns) == 0;
     int fullyOpen = halfOpen & ((rookFile & enemyPawns) == 0);
     scores[colorIndex] += halfOpen * (halfOpenFileBonus + fullyOpen * (fullyOpenFileBonus - halfOpenFileBonus));
 }
 
-void HeuristicEvaluator::addAttackDefendValues(const Board& board, Bitboard controlledSquares, Color color){
-    int colorIndex = static_cast<int>(color);
+void HeuristicEvaluator::addAttackDefendValues(const Board& board, Bitboard controlledSquares){
+    int colorIndex = static_cast<int>(workingColor);
     for(PieceType type : pieceTypes){
-        Bitboard enemyPieceBitboard = board.pieces(type, ~color);
-        Bitboard friendlyPieceBitboard = board.pieces(type, color);
+        Bitboard enemyPieceBitboard = board.pieces(type, ~workingColor);
+        Bitboard friendlyPieceBitboard = board.pieces(type, workingColor);
         Bitboard attackedPieces = enemyPieceBitboard & controlledSquares;
         Bitboard defendedPieces = friendlyPieceBitboard & controlledSquares;
         scores[colorIndex] += attackedPieces.count() * attackValues[type];
@@ -110,7 +110,7 @@ void HeuristicEvaluator::addAttackDefendValues(const Board& board, Bitboard cont
 }
 
 // Bishop, Rook, Queen
-void HeuristicEvaluator::evaluateBlockedPieces(const Board& board, Color color){
+void HeuristicEvaluator::evaluateBlockedPieces(const Board& board){
     std::vector<PieceType> blockedPieces = {PieceType::BISHOP, PieceType::ROOK, PieceType::QUEEN};
     std::map<PieceType, std::function<Bitboard(Square, Bitboard)>> pieceTypeToAttackFunction = {
             {PieceType::BISHOP, attacks::bishop},
@@ -118,31 +118,31 @@ void HeuristicEvaluator::evaluateBlockedPieces(const Board& board, Color color){
             {PieceType::QUEEN, attacks::queen}
     };
     Bitboard occ = board.occ();
-    int colorIndex = static_cast<int>(color);
+    int colorIndex = static_cast<int>(workingColor);
     for (chess::PieceType type: blockedPieces) {
         int pc = static_cast<int>(type) * 2 + colorIndex;
-        Bitboard pieceBits = board.pieces(type, color);
+        Bitboard pieceBits = board.pieces(type, workingColor);
         while(pieceBits != 0){
             int sqrIndex = pieceBits.pop();
             incPestoValues(colorIndex, pc, sqrIndex);
             Bitboard controlledSquares = pieceTypeToAttackFunction[type](sqrIndex, occ);
-            addAttackDefendValues(board, controlledSquares, color);
-            addMobilityBonus(board, controlledSquares, color, false);
+            addAttackDefendValues(board, controlledSquares);
+            addMobilityBonus(board, controlledSquares, false);
             if (type == PieceType::ROOK){
-                addRookOnOpenFile(board, Square(sqrIndex), color);
+                addRookOnOpenFile(board, Square(sqrIndex));
             }
         }
     }
 
 }
 
-void HeuristicEvaluator::evaluatePawns(const Board& board, Color color){
+void HeuristicEvaluator::evaluatePawns(const Board& board){
     Bitboard leftAttacks;
     Bitboard rightAttacks;
-    Bitboard pawnBits = board.pieces(PieceType::PAWN, color);
-    int colorIndex = static_cast<int>(color);
+    Bitboard pawnBits = board.pieces(PieceType::PAWN, workingColor);
+    int colorIndex = static_cast<int>(workingColor);
     int pc = static_cast<int>(PieceType::PAWN) * 2 + colorIndex;
-    if (color == Color::WHITE) {
+    if (workingColor == Color::WHITE) {
         leftAttacks = attacks::pawnLeftAttacks<Color::WHITE>(pawnBits);
         rightAttacks = attacks::pawnRightAttacks<Color::WHITE>(pawnBits);
     }
@@ -150,44 +150,44 @@ void HeuristicEvaluator::evaluatePawns(const Board& board, Color color){
         leftAttacks = attacks::pawnLeftAttacks<Color::BLACK>(pawnBits);
         rightAttacks = attacks::pawnRightAttacks<Color::BLACK>(pawnBits);
     }
-    addAttackDefendValues(board, leftAttacks, color);
-    addAttackDefendValues(board, rightAttacks, color);
+    addAttackDefendValues(board, leftAttacks);
+    addAttackDefendValues(board, rightAttacks);
 
     while(pawnBits != 0){
         int sqrIndex = pawnBits.pop();
         Square pawnSquare = Square(sqrIndex);
-        addPassedPawnBonus(board, pawnSquare, color);
+        addPassedPawnBonus(board, pawnSquare);
         incPestoValues(colorIndex, pc, sqrIndex);
     }
 }
 
-void HeuristicEvaluator::evaluateKing(const Board& board, Color color){
-    int colorIndex = static_cast<int>(color);
+void HeuristicEvaluator::evaluateKing(const Board& board){
+    int colorIndex = static_cast<int>(workingColor);
     int pc = static_cast<int>(PieceType::KING) * 2 + colorIndex;
-    Square kingSquare = board.kingSq(color);
+    Square kingSquare = board.kingSq(workingColor);
     int sqrIndex = kingSquare.index();
     Bitboard controlledSquares = attacks::king(sqrIndex);
     incPestoValues(colorIndex, pc, sqrIndex);
-    addAttackDefendValues(board, controlledSquares, color);
-    addMobilityBonus(board, controlledSquares, color, true);
+    addAttackDefendValues(board, controlledSquares);
+    addMobilityBonus(board, controlledSquares, true);
 }
 
-void HeuristicEvaluator::evaluateKnights(const Board& board, Color color){
-    int colorIndex = static_cast<int>(color);
-    Bitboard knightBits = board.pieces(PieceType::KNIGHT, color);
+void HeuristicEvaluator::evaluateKnights(const Board& board){
+    int colorIndex = static_cast<int>(workingColor);
+    Bitboard knightBits = board.pieces(PieceType::KNIGHT, workingColor);
     int pc = static_cast<int>(PieceType::KNIGHT) * 2 + colorIndex;
     while(knightBits != 0){
         int sqrIndex = knightBits.pop();
         Square knightSquare = Square(sqrIndex);
         Bitboard controlledSquares = attacks::knight(knightSquare);
         incPestoValues(colorIndex, pc, sqrIndex);
-        addAttackDefendValues(board, controlledSquares, color);
-        addMobilityBonus(board, controlledSquares, color, false);
-        addOutpostBonus(board, knightSquare, color);
+        addAttackDefendValues(board, controlledSquares);
+        addMobilityBonus(board, controlledSquares, false);
+        addOutpostBonus(board, knightSquare);
     }
 }
 
-int HeuristicEvaluator::getEval(const chess::Board &board) {
+int HeuristicEvaluator::getEval(const Board &board) {
     if (gameOver) {
         if(isDraw){
             return 0;
@@ -199,13 +199,12 @@ int HeuristicEvaluator::getEval(const chess::Board &board) {
     int evaluation = 0;
     initEval();
 
-
     Board::CastlingRights rights = board.castlingRights();
     if (rights.has(Color::WHITE)) {
-        evaluation += castle_rights_bonus;
+        evaluation += castlingRightsBonus;
     }
     if (rights.has(Color::BLACK)) {
-        evaluation -= castle_rights_bonus;
+        evaluation -= castlingRightsBonus;
     }
     evaluation += evaluatePieces(board);
     return evaluation;
@@ -256,12 +255,13 @@ int HeuristicEvaluator::evaluatePieces(const Board& board) {
     Color white = Color::WHITE;
     Color black = ~white;
     for(Color color : {white, black}){
-        evaluatePawns(board, color);
-        evaluateKnights(board, color);
-        evaluateBlockedPieces(board, color);
-        evaluateKing(board, color);
-
+        workingColor = color;
+        evaluatePawns(board);
+        evaluateKnights(board);
+        evaluateBlockedPieces(board);
+        evaluateKing(board);
     }
+
     int eval = scores[0] - scores[1];
 
     int mgScore = mg[0] - mg[1];
@@ -273,4 +273,14 @@ int HeuristicEvaluator::evaluatePieces(const Board& board) {
         eval += endgameMateEval(board, egPhase, eval);
     }
     return eval;
+}
+
+void HeuristicEvaluator::setGameOver(bool isDraw, chess::Color winner) {
+    this->isDraw = isDraw;
+    this->winner = winner;
+    gameOver = true;
+}
+
+void HeuristicEvaluator::setGameOngoing() {
+    gameOver = false;
 }

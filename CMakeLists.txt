@@ -6,12 +6,13 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Add the source files to the project
 add_executable(chessBot
-        src/main.cpp          # Your main source file
-        src/game_tables.cpp        # Add this line to include tables.cpp where initTables() is defined
-        src/evaluation.cpp    # Add any other .cpp files as needed
-        src/search.cpp
-        src/game_tables.cpp        # If search.cpp is involved, include it too
+        src/main.cpp
+        src/game_tables.cpp
         src/transposition_table.cpp
+        src/engine.cpp
+        src/move_sorters.cpp
+        src/searchers.cpp
+        src/heuristic_evaluator.cpp
 
 )
 

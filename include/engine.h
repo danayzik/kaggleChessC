@@ -3,25 +3,35 @@
 #define CHESSBOT_ENGINE_H
 #include "chess.hpp"
 #include "evaluator.h"
+#include "searchers.h"
+using namespace searchers;
 using namespace chess;
-
-class Engine {
-private:
-    Board board;
-    Color myColor;
-    bool isMaximizing;
-    Evaluator evaluator;
+using namespace evaluation;
 
 
-public:
-    Engine(Board board, Color color);
-    void makeMove(const Move& move);
-    int getEval();
-    Move getMove();
-};
+namespace engines {
+    class Engine {
+    private:
+        Board board;
+        Color myColor;
+        bool isWhite;
+        Evaluator* evaluator;
+        Searcher* searcher;
+
+    public:
+        Engine(Board&& board, Color myColor, Evaluator* evaluator, Searcher* searcher);
+
+        void makeMove(const Move &move);
+
+        [[maybe_unused]] int getEval();
+
+        Move getMove();
+
+        const Board& getBoard();
+    };
+
+}
 
 
 
-
-
-#endif //CHESSBOT_ENGINE_H
+#endif

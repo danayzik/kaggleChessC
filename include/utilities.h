@@ -36,6 +36,25 @@ namespace bot_utils {
         return ranksInfrontMask;
     }
 
+    inline bool isCheckMove(Board& board, const Move& move) {
+        board.makeMove(move);
+        bool isCheck = board.inCheck();
+        board.unmakeMove(move);
+        return isCheck;
+    }
+
+    inline pair<GameResultReason, GameResult> isGameOver(Board& board, Movelist& legalMovelist)  {
+        if (board.isHalfMoveDraw()) return board.getHalfMoveDrawType();
+        if (board.isInsufficientMaterial()) return {GameResultReason::INSUFFICIENT_MATERIAL, GameResult::DRAW};
+        if (board.isRepetition()) return {GameResultReason::THREEFOLD_REPETITION, GameResult::DRAW};
+        if (legalMovelist.empty()) {
+            if (board.inCheck()) return {GameResultReason::CHECKMATE, GameResult::LOSE};
+            return {GameResultReason::STALEMATE, GameResult::DRAW};
+        }
+
+        return {GameResultReason::NONE, GameResult::NONE};
+    }
+
 }
 
 #endif

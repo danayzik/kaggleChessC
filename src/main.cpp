@@ -1,14 +1,14 @@
 #include "../include/chess.hpp"
 #include "../include/game_tables.h"
-#include "../include/search.h"
+#include "../include/engine.h"
 
-Board myBoard;
-bool maximizeSearch;
-int getTimeLimit(){
-    return myBoard.fullMoveNumber() >= 55? 100: 250;
-}
+using namespace std;
+using namespace chess;
+using namespace engines;
 
-void run(){
+
+
+void run(Engine& engine){
     while (true){
         std::string move_uci;
         std::getline(std::cin, move_uci);
@@ -16,36 +16,38 @@ void run(){
             break;
         }
         if (move_uci != "start") {
-            Move enemyMove = uci::uciToMove(myBoard ,move_uci);
-            myBoard.makeMove(enemyMove);
+            Move enemyMove = uci::uciToMove(engine.getBoard() ,move_uci);
+            engine.makeMove(enemyMove);
         }
-        auto [eval, move] = iterativeSearch(myBoard, maximizeSearch, getTimeLimit());
-        std::string moveUCI = uci::moveToUci(move);
-        myBoard.makeMove(move);
+        Move move = engine.getMove();
+        string moveUCI = uci::moveToUci(move);
+        engine.makeMove(move);
         std::cout << moveUCI << std::endl << std::flush;
     }
 }
 
-void setupBoard(){
-    std::string fen;
-    std::getline(std::cin, fen);
-    myBoard = Board(fen);
-}
 
-void setColor(){
+
+Color getColor(){
     std::string input;
     std::getline(std::cin, input);
     char color = input[0];
-    if (color == 'w')maximizeSearch = true;
-    if (color == 'b')maximizeSearch = false;
+    return color == 'w'? Color::WHITE : Color::BLACK;
+
 }
 
 
 int main() {
+    string fen;
     initTables();
-    setColor();
-    setupBoard();
-    run();
+    Color color = getColor();
+    bool isWhite = color == Color::WHITE;
+    getline(std::cin, fen);
+    Board myBoard = Board(fen);
+    Evaluator* evaluator = new HeuristicEvaluator();
+    Searcher* searcher = new BasicSearcher(evaluator, isWhite);
+    Engine myEngine = Engine(std::move(myBoard), color, evaluator, searcher);
+    run(myEngine);
     return 0;
 }
 

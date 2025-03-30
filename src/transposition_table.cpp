@@ -1,6 +1,6 @@
 #include "../include/transposition_table.h"
 
-
+using namespace transpositions;
 
 TranspositionTable::TranspositionTable(size_t evictionThreshold, size_t resetSize)
         : evictionThreshold(evictionThreshold), resetSize(resetSize) {}
