@@ -44,8 +44,9 @@ int main() {
     bool isWhite = color == Color::WHITE;
     getline(std::cin, fen);
     Board myBoard = Board(fen);
+
     Evaluator* evaluator = new HeuristicEvaluator();
-    Searcher* searcher = new BasicSearcher(evaluator, isWhite);
+    Searcher* searcher = new IterativePvHistorySearcher(evaluator, isWhite);
     Engine myEngine = Engine(std::move(myBoard), color, evaluator, searcher);
     run(myEngine);
     return 0;

@@ -6,10 +6,6 @@
 using namespace bot_utils;
 using namespace evaluation;
 
-std::array<int, 2> scores;
-std::array<int, 2> mg;
-std::array<int, 2> eg;
-int gamePhase;
 
 
 
@@ -40,7 +36,6 @@ void HeuristicEvaluator::addPassedPawnBonus(const Board& board, Square pawnSquar
     Bitboard denyingPawns = tripleFiles & enemyPawns & ranksInfrontMask;
     bool passed = denyingPawns == 0;
     scores[colorIndex] += passed*passedPawnBonus;
-
 
 }
 

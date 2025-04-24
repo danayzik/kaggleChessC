@@ -20,7 +20,7 @@ namespace bot_utils {
 
     inline Bitboard tripleFileMask(Bitboard fileBits, File f){
         Bitboard leftFile = f >> std::min(1, (int)f);
-        Bitboard rightFile = f >> std::min(1, (int)f-7);
+        Bitboard rightFile = f << std::min(1, (int)f-7);
         return  (leftFile | rightFile | fileBits);
     }
 

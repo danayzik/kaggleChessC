@@ -1,8 +1,9 @@
 #include "../include/engine.h"
-
+#include "../include/utilities.h"
 using namespace std;
 using namespace chess;
 using namespace engines;
+using namespace bot_utils;
 
 
 Engine::Engine(Board&& board, Color myColor, Evaluator* evaluator, Searcher* searcher) : board(std::move(board)), myColor(myColor), evaluator(evaluator),
@@ -10,7 +11,12 @@ Engine::Engine(Board&& board, Color myColor, Evaluator* evaluator, Searcher* sea
 
 [[maybe_unused]] int Engine::getEval() {return evaluator->getEval(board);}
 
-Move Engine::getMove() {return searcher->getMove(board, 150);}//Add time manager
+Move Engine::getMove() {
+    auto [reason, result] = board.isGameOver();
+    if(reason != GameResultReason::NONE)
+        exit(0);
+    return searcher->getMove(board, 200);
+}//Add time manager
 
 
 void Engine::makeMove(const chess::Move &move) {board.makeMove(move);}

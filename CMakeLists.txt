@@ -10,9 +10,13 @@ add_executable(chessBot
         src/game_tables.cpp
         src/transposition_table.cpp
         src/engine.cpp
-        src/move_sorters.cpp
-        src/searchers.cpp
+        src/sorters.cpp
+        src/basic_searcher.cpp
         src/heuristic_evaluator.cpp
+        src/basic_iterative_searcher.cpp
+        src/iterative_pv_searcher.cpp
+        src/history_pv_searcher.cpp
+        src/history_killer_pv_searcher.cpp
 
 )
 
