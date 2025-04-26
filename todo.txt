@@ -1,3 +1,5 @@
-Add destructors
-Add time manager
-Add printer
+
+Fix transpositions
+Make sure killer moves improve
+
+Remove map from sorters

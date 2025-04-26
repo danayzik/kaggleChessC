@@ -17,6 +17,7 @@ add_executable(chessBot
         src/iterative_pv_searcher.cpp
         src/history_pv_searcher.cpp
         src/history_killer_pv_searcher.cpp
+        src/history_killer_pv_TT_searcher.cpp
 
 )
 

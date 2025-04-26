@@ -2,7 +2,6 @@
 #ifndef CHESSBOT_SEARCHERS_H
 #define CHESSBOT_SEARCHERS_H
 #include "chess.hpp"
-#include <map>
 #include "evaluator.h"
 #include <chrono>
 #include <memory>
@@ -93,9 +92,27 @@ namespace searchers {
         }
     protected:
         pair<int , Move> iterativeDeepening(Board& board);
-        pair<int , Move> minimax(Board& board, int depth, int alpha, int beta, bool isMaximizing, bool inRoot);
+        pair<int , Move> minimax(Board& board, int depth, int plyFromRoot, int alpha, int beta, bool isMaximizing, bool inRoot);
     public:
         IterativePvHistoryKillerSearcher(Evaluator* evaluator, bool isWhite);
+        Move getMove(Board &board, int msTimeLimit) override;
+    };
+
+    class IterativePvHistoryKillerTTSearcher : public Searcher{
+    private:
+        int historyTable[64][64] = {};
+        Move killerMoves[40][2] = {};
+        TranspositionTable transpositionTable = TranspositionTable(1);
+        inline void decayHistory() {
+            for(auto & i : historyTable)
+                for(int & j : i)
+                    j /= 2;
+        }
+    protected:
+        pair<int , Move> iterativeDeepening(Board& board);
+        pair<int , Move> minimax(Board& board, int depth, int plyFromRoot, int alpha, int beta, bool isMaximizing, bool inRoot);
+    public:
+        IterativePvHistoryKillerTTSearcher(Evaluator* evaluator, bool isWhite);
         Move getMove(Board &board, int msTimeLimit) override;
     };
 }

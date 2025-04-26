@@ -1,42 +1,43 @@
 #ifndef TRANSPOSITION_TABLE_H
 #define TRANSPOSITION_TABLE_H
 
-#include <unordered_map>
 #include <vector>
 #include <algorithm>
 #include "chess.hpp"
 
 using namespace chess;
 namespace transpositions {
+    enum EntryType { EXACT, LOWERBOUND, UPPERBOUND };
     struct TTEntry {
+        uint64_t key;
         int eval;
         Move bestMove;
+        EntryType entryType;
         int depth;
-        uint32_t fullMoves;
+        uint32_t fullMoveClock;
 
-        explicit TTEntry(int e = 0, Move m = Move(), int d = 0, uint32_t f = 0)
-                : eval(e), bestMove(m), depth(d), fullMoves(f) {}
+        inline TTEntry(uint64_t key, int eval, Move m, int depth, EntryType type, uint32_t fullMoves)
+                : key(key), eval(eval), bestMove(m), depth(depth), entryType(type), fullMoveClock(fullMoves){};
+        inline TTEntry() = default;
     };
 
     class TranspositionTable {
     private:
-        std::unordered_map<uint64_t, TTEntry> table;
-        size_t evictionThreshold;
-        size_t resetSize;
-        size_t size = 0;
-
-        void evictEntries();
+        std::vector<TTEntry> table;
+        size_t size;
 
     public:
-        TranspositionTable(size_t evictionThreshold, size_t resetSize);
+        explicit TranspositionTable(size_t MB){
+            size = (MB * 1024 * 1024) / sizeof(TTEntry);
+            table.resize(size);}
 
-        void store(const uintptr_t key, const TTEntry &entry);
+        void store(uint64_t key, int eval, Move m, int depth, EntryType type, uint32_t fullMoves);
 
-        std::pair<int, Move> fetch(const uintptr_t key);
 
-        bool hasKey(const uintptr_t key);
+        bool probe(uint64_t key, int depth, TTEntry& outEntry) const;
 
-        void clean();
+        bool isHashMove(const Move& move, Board& board) const;
+
     };
 }
 

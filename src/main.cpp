@@ -6,7 +6,14 @@ using namespace std;
 using namespace chess;
 using namespace engines;
 
-
+void timeEval(Evaluator& evaluator, const Board& board){
+    auto start = std::chrono::high_resolution_clock::now();
+    int eval = evaluator.getEval(board);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = end - start;
+    std::cout << "Eval: " << eval << "\n";
+    std::cout << "Evaluation took " << elapsed.count() << " ms\n";
+}
 
 void run(Engine& engine){
     while (true){
@@ -44,10 +51,10 @@ int main() {
     bool isWhite = color == Color::WHITE;
     getline(std::cin, fen);
     Board myBoard = Board(fen);
-
     Evaluator* evaluator = new HeuristicEvaluator();
-    Searcher* searcher = new IterativePvHistorySearcher(evaluator, isWhite);
+    Searcher* searcher = new IterativePvHistoryKillerSearcher(evaluator, isWhite);
     Engine myEngine = Engine(std::move(myBoard), color, evaluator, searcher);
+//    timeEval(*evaluator, myBoard);
     run(myEngine);
     return 0;
 }
