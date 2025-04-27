@@ -3,19 +3,28 @@
 #define CHESSBOT_SORTERS_H
 #include "chess.hpp"
 #include "transposition_table.h"
+#include "utilities.h"
 using namespace chess;
 using namespace std;
+using namespace bot_utils;
 
 namespace sorters {
     class MoveSorter {
     protected:
         Move pv;
-        [[nodiscard]] static inline int mvvLvaScore(const Board& board, const Move& move) {
+        [[nodiscard]] static inline int16_t mvvLvaScore(const Board& board, const Move& move) {
             Square from = move.from();
             Square to = move.to();
-            int attacker = static_cast<int>(board.at(from).type()) + 1;
-            int victim = static_cast<int>(board.at(to).type()) + 1;
-            return victim * 10 - attacker;
+            int16_t attackerType = static_cast<int16_t>(board.at(from).type());
+            int16_t victimType = static_cast<int16_t>(board.at(to).type());
+
+            int16_t attackerValue = materialValue[attackerType];
+            int16_t victimValue = materialValue[victimType];
+            if (victimValue >= attackerValue) {
+                return (victimValue * 10) - attackerValue;
+            } else {
+                return -(attackerValue - victimValue);
+            }
         }
     public:
         virtual inline void setHistoryTable(int (*table)[64][64]){};

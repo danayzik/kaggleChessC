@@ -92,69 +92,68 @@ void PvHistoryMoveSorter::sortMovelist(chess::Board &board, chess::Movelist &mov
 
 
 void PvHistoryKillerMoveSorter::sortMovelist(Board &board, Movelist& moves) const {
-    std::unordered_map<uint16_t, int> moveScores;
-
-    for (const auto& move : moves) {
-        int score = 0;
+    for (auto& move : moves) {
+        int16_t score = -20000;
         if(move==pv){
-            score += 100000;
+            move.setScore(INT16_MAX);
+            continue;
         }
 
         if (isCheckMove(board, move)) {
-            score += 10000;
+            score += 15000;
         }
 
         if (board.isCapture(move)) {
-            score += mvvLvaScore(board, move)*1000;
+            score += mvvLvaScore(board, move)*100 + 400;
         }
 
         if (move == (*killerMoves)[currDepth][0] || move == (*killerMoves)[currDepth][1]) {
-            score += 100;
+            score += 300;
         }
 
         score += (*historyTable)[move.from().index()][move.to().index()];
+        move.setScore(score);
 
-        moveScores[move.move()] = score;
     }
 
-    auto comparator = [&moveScores](const Move& a, const Move& b) {
-        return moveScores[a.move()] > moveScores[b.move()];
+    auto comparator = [](const Move& a, const Move& b) {
+        return a.score() > b.score();
     };
 
     std::sort(moves.begin(), moves.end(), comparator);
 }
 
 void PvHistoryKillerTTMoveSorter::sortMovelist(Board &board, Movelist& moves) const {
-    std::unordered_map<uint16_t, int> moveScores;
 
-    for (const auto& move : moves) {
-        int score = 0;
+    for (auto& move : moves) {
+        int16_t score = -20000;
         if(move==pv){
-            score += 1000000;
+            move.setScore(INT16_MAX);
+            continue;
         }
         if(TT->isHashMove(move, board)){
-            score += 100000;
+            score += 30000;
         }
 
         if (isCheckMove(board, move)) {
-            score += 10000;
+            score += 15000;
         }
 
         if (board.isCapture(move)) {
-            score += mvvLvaScore(board, move)*1000 + 1000;
+            score += mvvLvaScore(board, move)*100 + 400;
         }
 
         if (move == (*killerMoves)[currDepth][0] || move == (*killerMoves)[currDepth][1]) {
-            score += 400;
+            score += 300;
         }
 
         score += (*historyTable)[move.from().index()][move.to().index()];
+        move.setScore(score);
 
-        moveScores[move.move()] = score;
     }
 
-    auto comparator = [&moveScores](const Move& a, const Move& b) {
-        return moveScores[a.move()] > moveScores[b.move()];
+    auto comparator = [](const Move& a, const Move& b) {
+        return a.score() > b.score();
     };
 
     std::sort(moves.begin(), moves.end(), comparator);

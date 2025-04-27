@@ -17,6 +17,14 @@ namespace bot_utils {
             PieceType::QUEEN,
             PieceType::KING
     };
+    constexpr int16_t materialValue[6] = {
+            10,  // Pawn
+            30,  // Knight
+            32,  // Bishop
+            50,  // Rook
+            90,  // Queen
+            0     // King
+    };
 
     inline Bitboard tripleFileMask(const Bitboard& fileBits,const File& f){
         Bitboard leftFile = f >> std::min(1, (int)f);

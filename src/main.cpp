@@ -45,6 +45,7 @@ Color getColor(){
 
 
 int main() {
+
     string fen;
     initTables();
     Color color = getColor();

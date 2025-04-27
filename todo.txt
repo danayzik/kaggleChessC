@@ -2,4 +2,7 @@
 Fix transpositions
 Make sure killer moves improve
 
+Enhance eval with attack/defend but don't use maps
+
+
 Remove map from sorters
