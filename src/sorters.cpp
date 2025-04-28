@@ -60,33 +60,32 @@ void PvMoveSorter::sortMovelist(Board& board, Movelist& moves) const {
 
 
 void PvHistoryMoveSorter::sortMovelist(chess::Board &board, chess::Movelist &moves) const {
-    auto comparator = [&board, this](const Move &a, const Move &b) {
-        if(a == pv)return true;
-        if(b == pv)return false;
-        bool leftIsCheckMove = isCheckMove(board, a);
-        bool rightIsCheckMove = isCheckMove(board, b);
-        if (leftIsCheckMove && !rightIsCheckMove) return true;
-        if (!leftIsCheckMove && rightIsCheckMove) return false;
-        bool leftIsCapture = board.isCapture(a);
-        bool rightIsCapture = board.isCapture(b);
-        if(leftIsCapture && rightIsCapture){
-            return mvvLvaScore(board, a) > mvvLvaScore(board, b);
-        }
-        if(leftIsCapture){
-            return true;
-        }
-        if(rightIsCapture){
-            return false;
+    for (auto& move : moves) {
+        int16_t score = -20000;
+        if(move==pv){
+            move.setScore(INT16_MAX);
+            continue;
         }
 
-        int historyScoreA = (*historyTable)[a.from().index()][a.to().index()];
-        int historyScoreB = (*historyTable)[b.from().index()][b.to().index()];
-        if (historyScoreA != historyScoreB) {
-            return historyScoreA > historyScoreB;
+        if (isCheckMove(board, move)) {
+            score += 15000;
         }
-        return a.from() < b.from();
+
+        if (board.isCapture(move)) {
+            score += mvvLvaScore(board, move)*100 + 400;
+        }
+
+
+        score += (*historyTable)[move.from().index()][move.to().index()];
+        move.setScore(score);
+
+    }
+
+    auto comparator = [](const Move& a, const Move& b) {
+        return a.score() > b.score();
     };
-    sort(moves.begin(), moves.end(), comparator);
+
+    std::sort(moves.begin(), moves.end(), comparator);
 }
 
 

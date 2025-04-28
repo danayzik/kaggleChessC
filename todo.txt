@@ -1,3 +1,8 @@
+Add more starting positions
+Add PV line
+Separate history by color
+Add isCheck bool to Move and combine isHash and Ischeck to one check
+Write about dynamic dispatch, can optimize out
 
 Fix transpositions
 Make sure killer moves improve

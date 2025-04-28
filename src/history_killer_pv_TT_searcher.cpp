@@ -8,6 +8,7 @@ using namespace chess;
 
 int hitCount = 0;
 int nodeCount = 0;
+int semiHitCount = 0;
 IterativePvHistoryKillerTTSearcher::IterativePvHistoryKillerTTSearcher(Evaluator* evaluator, bool isWhite) : Searcher(evaluator, isWhite, std::make_unique<PvHistoryKillerTTMoveSorter>()) {
     sorter->setHistoryTable(&historyTable); sorter->setKillerMoves(&killerMoves); sorter->setTT(&transpositionTable);}
 
@@ -46,8 +47,10 @@ pair<int, Move> IterativePvHistoryKillerTTSearcher::iterativeDeepening(chess::Bo
     decayHistory();
 //    std::cout << "Depth: " << depth << std::endl;
 //    std::cout<< "Hit count: " << hitCount << std::endl << "Node count: " << nodeCount << std::endl;
+//    std::cout<< "SemiHit count: " << semiHitCount << std::endl;
 //    hitCount = 0;
 //    nodeCount = 0;
+//    semiHitCount = 0;
     return {currEval, bestMove};
 }
 
@@ -73,36 +76,49 @@ pair<int, Move> IterativePvHistoryKillerTTSearcher::minimax(Board &board, int de
         evaluator->setGameOngoing();
         return {evaluator->getEval(board), Move()};
     }
-    TTEntry entry;
+    TTEntry entry{};
     bool hasKey = transpositionTable.probe(board.hash(), depth, entry);
-
-    if(hasKey){ //Possibly add isMaximizing check, not sure
+    Move best_move = Move();
+    if(hasKey){
         switch (entry.entryType) {
             case EntryType::EXACT:
                 hitCount++;
+                semiHitCount++;
                 return {entry.eval, entry.bestMove};
             case EntryType::LOWERBOUND:
-                if(isMaximizing && entry.eval >= beta){
-                    hitCount++;
-                    return {entry.eval, entry.bestMove};
+                if(isMaximizing){
+                    if(entry.eval >= beta){
+                        hitCount++;
+                        return {entry.eval, entry.bestMove};
+                    }
+                    semiHitCount++;
+                    alpha = max(alpha, entry.eval);
+                    best_move = entry.bestMove;
+                    break;
+
                 }
                 break;
             case EntryType::UPPERBOUND:
-                if(!isMaximizing && entry.eval <= alpha){
-                    hitCount++;
-                    return {entry.eval, entry.bestMove};
+                if(!isMaximizing){
+                    if(entry.eval <= alpha){
+                        hitCount++;
+                        return {entry.eval, entry.bestMove};
+                    }
+                    semiHitCount++;
+                    best_move = entry.bestMove;
+                    beta = min(beta, entry.eval);
                 }
-                break;
         }
     }
 
-    Move best_move = Move();
+
     sorter->sortMovelist(board, moves);
     if (isMaximizing) {
         int max_eval = NEGINF - 1;
         for (const auto& move: moves) {
             bool isCapture = board.isCapture(move);
             board.makeMove(move);
+            bool isCheck = board.inCheck();
             auto [eval, _] = minimax(board, depth - 1, plyFromRoot+1, alpha, beta, false, false);
             board.unmakeMove(move);
             if(!stopSearch){
@@ -119,7 +135,7 @@ pair<int, Move> IterativePvHistoryKillerTTSearcher::minimax(Board &board, int de
             alpha = max(alpha, eval);
             if (eval >= beta ) {
                 transpositionTable.store(board.hash(), max_eval, best_move, depth, EntryType::LOWERBOUND, board.fullMoveNumber());
-                if (!isCapture && !board.inCheck()) {
+                if (!isCapture && !isCheck) {
                     killerMoves[plyFromRoot][1] = killerMoves[plyFromRoot][0];
                     killerMoves[plyFromRoot][0] = move;
                 }
@@ -134,6 +150,7 @@ pair<int, Move> IterativePvHistoryKillerTTSearcher::minimax(Board &board, int de
         for (const auto& move: moves) {
             bool isCapture = board.isCapture(move);
             board.makeMove(move);
+            bool isCheck = board.inCheck();
             auto [eval, _] = minimax(board, depth - 1, plyFromRoot+1 , alpha, beta, true, false);
             board.unmakeMove(move);
             if(!stopSearch){
@@ -150,7 +167,7 @@ pair<int, Move> IterativePvHistoryKillerTTSearcher::minimax(Board &board, int de
             beta = min(beta, eval);
             if (eval <= alpha) {
                 transpositionTable.store(board.hash(), min_eval, best_move, depth, EntryType::UPPERBOUND, board.fullMoveNumber());
-                if (!isCapture && !board.inCheck()) {
+                if (!isCapture && !isCheck) {
                     killerMoves[plyFromRoot][1] = killerMoves[plyFromRoot][0];
                     killerMoves[plyFromRoot][0] = move;
                 }

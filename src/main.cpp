@@ -53,7 +53,7 @@ int main() {
     getline(std::cin, fen);
     Board myBoard = Board(fen);
     Evaluator* evaluator = new HeuristicEvaluator();
-    Searcher* searcher = new IterativePvHistoryKillerSearcher(evaluator, isWhite);
+    Searcher* searcher = new IterativePvHistoryKillerTTSearcher(evaluator, isWhite);
     Engine myEngine = Engine(std::move(myBoard), color, evaluator, searcher);
 //    timeEval(*evaluator, myBoard);
     run(myEngine);

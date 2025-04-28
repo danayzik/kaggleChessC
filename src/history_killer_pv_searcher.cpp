@@ -76,6 +76,7 @@ pair<int, Move> IterativePvHistoryKillerSearcher::minimax(Board &board, int dept
         for (const auto& move: moves) {
             bool isCapture = board.isCapture(move);
             board.makeMove(move);
+            bool isCheck = board.inCheck();
             auto [eval, _] = minimax(board, depth - 1, plyFromRoot+1, alpha, beta, false, false);
             board.unmakeMove(move);
             if(!stopSearch){
@@ -91,7 +92,7 @@ pair<int, Move> IterativePvHistoryKillerSearcher::minimax(Board &board, int dept
             }
             alpha = max(alpha, eval);
             if (eval >= beta ) {
-                if (!isCapture && !board.inCheck()) {
+                if (!isCapture && !isCheck) {
                     killerMoves[plyFromRoot][1] = killerMoves[plyFromRoot][0];
                     killerMoves[plyFromRoot][0] = move;
                 }
@@ -105,6 +106,7 @@ pair<int, Move> IterativePvHistoryKillerSearcher::minimax(Board &board, int dept
         for (const auto& move: moves) {
             bool isCapture = board.isCapture(move);
             board.makeMove(move);
+            bool isCheck = board.inCheck();
             auto [eval, _] = minimax(board, depth - 1, plyFromRoot+1 , alpha, beta, true, false);
             board.unmakeMove(move);
             if(!stopSearch){
@@ -120,7 +122,7 @@ pair<int, Move> IterativePvHistoryKillerSearcher::minimax(Board &board, int dept
             }
             beta = min(beta, eval);
             if (eval <= alpha) {
-                if (!isCapture && !board.inCheck()) {
+                if (!isCapture && !isCheck) {
                     killerMoves[plyFromRoot][1] = killerMoves[plyFromRoot][0];
                     killerMoves[plyFromRoot][0] = move;
                 }

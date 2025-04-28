@@ -1,0 +1,10 @@
+w
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+start
+e7e6
+f8e7
+g8f6
+e8g8
+g7g6
+a7a6
+end
