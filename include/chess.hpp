@@ -1213,6 +1213,8 @@ namespace chess {
 
 class Move {
    public:
+    bool isCheck = false;
+    bool isHash = false;
     Move() = default;
     constexpr Move(std::uint16_t move) : move_(move), score_(0) {}
 

@@ -2,9 +2,12 @@
 #ifndef CHESSBOT_UTILITIES_H
 #define CHESSBOT_UTILITIES_H
 #include "chess.hpp"
+#include "transposition_table.h"
 using namespace chess;
 using namespace std;
+using namespace transpositions;
 namespace bot_utils {
+    static constexpr int MAX_DEPTH = 40;
     static constexpr int INF = 32767;
     static constexpr int NEGINF = -32768;
     static constexpr uint64_t allOnes = ~0ULL;
@@ -45,6 +48,13 @@ namespace bot_utils {
         bool isCheck = board.inCheck();
         board.unmakeMove(move);
         return isCheck;
+    }
+    inline void setCheckAndHashMove(Board& board, Move& move, int currDepth, TranspositionTable* tt){
+        board.makeMove(move);
+        move.isCheck = board.inCheck();
+        uint64_t zobrist = board.hash();
+        move.isHash = tt->isHashedPosition(zobrist, currDepth);
+        board.unmakeMove(move);
     }
 
     inline pair<GameResultReason, GameResult> isGameOver(const Board& board, const Movelist& legalMovelist)  {

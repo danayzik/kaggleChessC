@@ -67,11 +67,13 @@ namespace searchers {
 
     class IterativePvHistorySearcher : public Searcher{
     private:
-        int historyTable[64][64] = {};
+        int historyTable[2][64][64] = {};
         inline void decayHistory() {
-            for(auto & i : historyTable)
-                for(int & j : i)
-                    j /= 2;
+            for(auto & k : historyTable) {
+                for (auto &i: k)
+                    for (int &j: i)
+                        j /= 2;
+            }
         }
     protected:
         pair<int , Move> iterativeDeepening(Board& board);
@@ -83,12 +85,14 @@ namespace searchers {
 
     class IterativePvHistoryKillerSearcher : public Searcher{
     private:
-        int historyTable[64][64] = {};
-        Move killerMoves[40][2] = {};
+        int historyTable[2][64][64] = {};
+        Move killerMoves[MAX_DEPTH][2] = {};
         inline void decayHistory() {
-            for(auto & i : historyTable)
-                for(int & j : i)
-                    j /= 2;
+            for(auto & k : historyTable) {
+                for (auto &i: k)
+                    for (int &j: i)
+                        j /= 2;
+            }
         }
     protected:
         pair<int , Move> iterativeDeepening(Board& board);
@@ -100,19 +104,63 @@ namespace searchers {
 
     class IterativePvHistoryKillerTTSearcher : public Searcher{
     private:
-        int historyTable[64][64] = {};
-        Move killerMoves[40][2] = {};
+        int historyTable[2][64][64] = {};
+        Move killerMoves[MAX_DEPTH][2] = {};
         TranspositionTable transpositionTable = TranspositionTable(1);
         inline void decayHistory() {
-            for(auto & i : historyTable)
-                for(int & j : i)
-                    j /= 2;
+            for(auto & k : historyTable) {
+                for (auto &i: k)
+                    for (int &j: i)
+                        j /= 2;
+            }
         }
     protected:
         pair<int , Move> iterativeDeepening(Board& board);
         pair<int , Move> minimax(Board& board, int depth, int plyFromRoot, int alpha, int beta, bool isMaximizing, bool inRoot);
     public:
         IterativePvHistoryKillerTTSearcher(Evaluator* evaluator, bool isWhite);
+        Move getMove(Board &board, int msTimeLimit) override;
+    };
+
+    class negaMaxSearcher : public Searcher{
+    private:
+        int historyTable[2][64][64] = {};
+        Move killerMoves[MAX_DEPTH][2] = {};
+        inline void decayHistory() {
+            for(auto & k : historyTable) {
+                for (auto &i: k)
+                    for (int &j: i)
+                        j /= 2;
+            }
+        }
+    protected:
+        Move iterativeDeepening(Board& board);
+        int negaMax(Board& board, int depth, int plyFromRoot, int alpha, int beta, int playerMultiplier, Move* pvLine);
+
+
+    public:
+        negaMaxSearcher(Evaluator* evaluator, bool isWhite);
+        Move getMove(Board &board, int msTimeLimit) override;
+    };
+
+    class negaMaxQSearcher : public Searcher{
+    private:
+        int historyTable[2][64][64] = {};
+        Move killerMoves[MAX_DEPTH][2] = {};
+        inline void decayHistory() {
+            for(auto & k : historyTable) {
+                for (auto &i: k)
+                    for (int &j: i)
+                        j /= 2;
+            }
+        }
+    protected:
+        Move iterativeDeepening(Board& board);
+        int negaMax(Board& board, int depth, int plyFromRoot, int alpha, int beta, int playerMultiplier, Move* pvLine);
+        int quiesce(Board &board, int plyFromRoot, int alpha, int beta, int playerMultiplier);
+
+    public:
+        negaMaxQSearcher(Evaluator* evaluator, bool isWhite);
         Move getMove(Board &board, int msTimeLimit) override;
     };
 }

@@ -11,14 +11,11 @@ add_executable(chessBot
         src/transposition_table.cpp
         src/engine.cpp
         src/sorters.cpp
-        src/basic_searcher.cpp
         src/heuristic_evaluator.cpp
-        src/basic_iterative_searcher.cpp
-        src/iterative_pv_searcher.cpp
-        src/history_pv_searcher.cpp
         src/history_killer_pv_searcher.cpp
         src/history_killer_pv_TT_searcher.cpp
+        src/negaMaxSearcher.cpp
+        src/negaMaxQSearcher.cpp
 
 )
 
-# Add any additional libraries or dependencies here if needed

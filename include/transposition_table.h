@@ -31,12 +31,13 @@ namespace transpositions {
             size = (MB * 1024 * 1024) / sizeof(TTEntry);
             table.resize(size);}
 
-        void store(uint64_t key, int eval, Move m, int depth, EntryType type, uint32_t fullMoves);
+        void store(uint64_t key, int eval, Move& m, int depth, EntryType type, uint32_t fullMoves);
 
 
         bool probe(uint64_t key, int depth, TTEntry& outEntry) const;
+        [[nodiscard]] inline size_t getSize() const{return size;}
 
-        bool isHashMove(const Move& move, Board& board) const;
+        [[nodiscard]] bool isHashedPosition(uint64_t key, int depth) const;
 
     };
 }

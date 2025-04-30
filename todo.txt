@@ -1,13 +1,22 @@
-Add more starting positions
-Add PV line
-Separate history by color
-Add isCheck bool to Move and combine isHash and Ischeck to one check
+
 Write about dynamic dispatch, can optimize out
 
 Fix transpositions
-Make sure killer moves improve
+
+Do quiesce
 
 Enhance eval with attack/defend but don't use maps
 
 
-Remove map from sorters
+BotV1 wins: 901
+Stockfish wins: 58
+Draws: 41
+negamax, killer and history no longer just for quiet moves. Removed check priority
+Best results
+losing captures sometimes last
+
+
+BotV1 wins: 595
+Stockfish wins: 323
+Draws: 82
+Currently as old

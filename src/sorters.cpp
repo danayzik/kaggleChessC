@@ -76,7 +76,7 @@ void PvHistoryMoveSorter::sortMovelist(chess::Board &board, chess::Movelist &mov
         }
 
 
-        score += (*historyTable)[move.from().index()][move.to().index()];
+        score += (*historyTable)[board.sideToMove()][move.from().index()][move.to().index()];
         move.setScore(score);
 
     }
@@ -106,11 +106,11 @@ void PvHistoryKillerMoveSorter::sortMovelist(Board &board, Movelist& moves) cons
             score += mvvLvaScore(board, move)*100 + 400;
         }
 
-        if (move == (*killerMoves)[currDepth][0] || move == (*killerMoves)[currDepth][1]) {
+        if (move == (*killerMoves)[plyFromRoot][0] || move == (*killerMoves)[plyFromRoot][1]) {
             score += 300;
         }
 
-        score += (*historyTable)[move.from().index()][move.to().index()];
+        score += (*historyTable)[board.sideToMove()][move.from().index()][move.to().index()];
         move.setScore(score);
 
     }
@@ -130,11 +130,12 @@ void PvHistoryKillerTTMoveSorter::sortMovelist(Board &board, Movelist& moves) co
             move.setScore(INT16_MAX);
             continue;
         }
-        if(TT->isHashMove(move, board)){
+        setCheckAndHashMove(board, move, depth, TT);
+        if(move.isHash){
             score += 30000;
         }
 
-        if (isCheckMove(board, move)) {
+        if (move.isCheck) {
             score += 15000;
         }
 
@@ -142,15 +143,115 @@ void PvHistoryKillerTTMoveSorter::sortMovelist(Board &board, Movelist& moves) co
             score += mvvLvaScore(board, move)*100 + 400;
         }
 
-        if (move == (*killerMoves)[currDepth][0] || move == (*killerMoves)[currDepth][1]) {
+        if (move == (*killerMoves)[plyFromRoot][0] || move == (*killerMoves)[plyFromRoot][1]) {
             score += 300;
         }
 
-        score += (*historyTable)[move.from().index()][move.to().index()];
+        score += (*historyTable)[board.sideToMove()][move.from().index()][move.to().index()];
         move.setScore(score);
 
     }
 
+    auto comparator = [](const Move& a, const Move& b) {
+        return a.score() > b.score();
+    };
+
+    std::sort(moves.begin(), moves.end(), comparator);
+}
+
+void negaMaxSorter::sortMovelist(Board &board, Movelist& moves) const {
+
+    for (auto& move : moves) {
+        if(pv[plyFromRoot] == move && plyFromRoot <= maxValidPvDepth){
+            move.setScore(INT16_MAX);
+            continue;
+        }
+        int16_t score = 0;
+        int historyScore = (*historyTable)[board.sideToMove()][move.from().index()][move.to().index()];
+        bool isKiller = move == (*killerMoves)[plyFromRoot][0] || move == (*killerMoves)[plyFromRoot][1];
+        bool isHistory = historyScore != 0;
+        bool isCapture = board.isCapture(move);
+        if(isCapture){
+            score += mvvLvaScore(board, move) + 500;
+        }
+        if(isKiller){
+            score += 300;
+        }
+        if(isHistory){
+            score += historyScore;
+        }
+        //Regular move
+        if(!(isCapture || isKiller || isHistory)){
+            score = INT16_MIN;
+        }
+        move.setScore(score);
+
+
+
+    }
+
+    auto comparator = [](const Move& a, const Move& b) {
+        return a.score() > b.score();
+    };
+
+    std::sort(moves.begin(), moves.end(), comparator);
+}
+
+void negaMaxSorter::setMoveScores(const chess::Board &board, chess::Movelist &moves) const {
+    for (auto& move : moves) {
+        if(pv[plyFromRoot] == move && plyFromRoot <= maxValidPvDepth){
+            move.setScore(INT16_MAX);
+            continue;
+        }
+        int16_t score = 0;
+        int historyScore = (*historyTable)[board.sideToMove()][move.from().index()][move.to().index()];
+        bool isKiller = move == (*killerMoves)[plyFromRoot][0] || move == (*killerMoves)[plyFromRoot][1];
+        bool isHistory = historyScore != 0;
+        bool isCapture = board.isCapture(move);
+        if(isCapture){
+            score += mvvLvaScore(board, move) + 500;
+        }
+        if(isKiller){
+            score += 300;
+        }
+        if(isHistory){
+            score += historyScore;
+        }
+        //Regular move
+        if(!(isCapture || isKiller || isHistory)){
+            score = INT16_MIN;
+        }
+        move.setScore(score);
+
+
+    }
+
+}
+
+Move negaMaxSorter::selectNextMove(chess::Movelist &moves, int startIndex) const {
+    for(int i = startIndex + 1; i < moves.size(); i++){
+        if(moves.at(i).score() > moves.at(startIndex).score()){
+            std::swap(moves[i], moves[startIndex]);
+        }
+    }
+    return moves.at(startIndex);
+}
+
+void negaMaxSorter::sortCaptures(const chess::Board &board, chess::Movelist &moves) const {
+    for (auto& move : moves) {
+        int16_t score = 0;
+        score += mvvLvaScore(board, move) + 500;
+        if(move == (*killerMoves)[plyFromRoot][0] || move == (*killerMoves)[plyFromRoot][1]){
+            score += 300;
+        }
+
+        score += (*historyTable)[board.sideToMove()][move.from().index()][move.to().index()];
+
+
+        move.setScore(score);
+
+
+    }
     auto comparator = [](const Move& a, const Move& b) {
         return a.score() > b.score();
     };

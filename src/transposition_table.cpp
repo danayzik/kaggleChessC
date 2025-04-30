@@ -2,11 +2,9 @@
 
 using namespace transpositions;
 
-bool TranspositionTable::isHashMove(const chess::Move &move, chess::Board &board) const {
-    board.makeMove(move);
-    uint64_t zobrist = board.hash();
-    board.unmakeMove(move);
-    return table[zobrist % size].key == zobrist;
+bool TranspositionTable::isHashedPosition(uint64_t key, int depth) const {
+    const TTEntry& entry = table[key % size];
+    return entry.key == key && entry.depth>= depth;
 }
 
 bool TranspositionTable::probe(uint64_t key, int depth, transpositions::TTEntry &outEntry) const {
@@ -18,10 +16,10 @@ bool TranspositionTable::probe(uint64_t key, int depth, transpositions::TTEntry 
     return false;
 }
 
-void TranspositionTable::store(uint64_t key, int eval, chess::Move m, int depth, transpositions::EntryType type,
+void TranspositionTable::store(uint64_t key, int eval, Move& m, int depth, transpositions::EntryType type,
                                uint32_t fullMoves) {
     TTEntry& entry = table[key % size];
-    if (((fullMoves >= entry.fullMoveClock) && (fullMoves - entry.fullMoveClock >= 2))|| entry.key == 0 || depth >= entry.depth) {
+    if (((fullMoves >= entry.fullMoveClock) && (fullMoves - entry.fullMoveClock >= 2))|| entry.key == 0 || depth > entry.depth) {
         entry = {key, eval, m, depth, type, fullMoves};
     }
 }

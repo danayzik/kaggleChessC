@@ -88,7 +88,7 @@ pair<int, Move> IterativePvHistorySearcher::minimax(Board &board, int depth, int
             max_eval = max(eval, max_eval);
             alpha = max(alpha, eval);
             if (eval >= beta ) {
-                historyTable[move.from().index()][move.to().index()] += depth * depth;
+                historyTable[board.sideToMove()][move.from().index()][move.to().index()] += depth * depth;
                 break;
             }
         }
@@ -112,7 +112,7 @@ pair<int, Move> IterativePvHistorySearcher::minimax(Board &board, int depth, int
             min_eval = min(min_eval, eval);
             beta = min(beta, eval);
             if (eval <= alpha) {
-                historyTable[move.from().index()][move.to().index()] += depth * depth;
+                historyTable[board.sideToMove()][move.from().index()][move.to().index()] += depth * depth;
                 break;
             }
         }

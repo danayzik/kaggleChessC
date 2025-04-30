@@ -26,7 +26,7 @@ pair<int, Move> IterativePvHistoryKillerSearcher::iterativeDeepening(chess::Boar
     int beta = INF;
     int depth = 1;
     stopSearch = false;
-    while(depth < 40) {
+    while(depth < MAX_DEPTH) {
         validSearchResult = false;
         std::pair<int, Move> miniMaxRes = minimax(board, depth, 0, alpha, beta, isWhite, true);
         newEval = miniMaxRes.first;
@@ -54,7 +54,7 @@ pair<int, Move> IterativePvHistoryKillerSearcher::minimax(Board &board, int dept
         stopSearch = true;
         return {0, Move()};
     }
-    sorter->setDepth(plyFromRoot);
+    sorter->setDepths(depth, plyFromRoot);
     Movelist moves;
     movegen::legalmoves(moves, board);
     auto [resultReason, gameResult] = isGameOver(board, moves);
@@ -96,7 +96,7 @@ pair<int, Move> IterativePvHistoryKillerSearcher::minimax(Board &board, int dept
                     killerMoves[plyFromRoot][1] = killerMoves[plyFromRoot][0];
                     killerMoves[plyFromRoot][0] = move;
                 }
-                historyTable[move.from().index()][move.to().index()] += depth * depth;
+                historyTable[board.sideToMove()][move.from().index()][move.to().index()] += depth * depth;
                 break;
             }
         }
@@ -126,7 +126,7 @@ pair<int, Move> IterativePvHistoryKillerSearcher::minimax(Board &board, int dept
                     killerMoves[plyFromRoot][1] = killerMoves[plyFromRoot][0];
                     killerMoves[plyFromRoot][0] = move;
                 }
-                historyTable[move.from().index()][move.to().index()] += depth * depth;
+                historyTable[board.sideToMove()][move.from().index()][move.to().index()] += depth * depth;
                 break;
             }
         }
