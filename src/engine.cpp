@@ -16,7 +16,7 @@ Move Engine::getMove() {
     if(reason != GameResultReason::NONE)
         exit(0);
     return searcher->getMove(board, 200);
-}//Add time manager
+}
 
 
 void Engine::makeMove(const chess::Move &move) {board.makeMove(move);}

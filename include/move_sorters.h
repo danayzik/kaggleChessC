@@ -11,7 +11,6 @@ using namespace bot_utils;
 namespace sorters {
     class MoveSorter {
     protected:
-        Move pv;
         [[nodiscard]] static inline int16_t mvvLvaScore(const Board& board, const Move& move) {
             Square from = move.from();
             Square to = move.to();
@@ -30,75 +29,17 @@ namespace sorters {
         virtual inline void setHistoryTable(int (*table)[2][64][64]){};
         virtual inline Move selectNextMove(Movelist& moves, int startIndex) const{return {};};
         virtual inline void setMoveScores(const Board& board, Movelist& moves) const{};
-
         virtual inline void setPv(Move& move) {};
         virtual void sortMovelist(Board& board, Movelist& moves) const = 0;
         virtual ~MoveSorter()= default;
         virtual inline void setKillerMoves(Move (*table)[MAX_DEPTH][2]){};
         virtual inline void setDepths(int currDepth, int currPlyFromRoot){};
-        virtual inline void setTT(transpositions::TranspositionTable* table) {};
         virtual inline void setPvLine(Move* pvLine) {};
         virtual inline void setMaxPvDepth(int d){};
         virtual void sortCaptures(const Board& board, Movelist& moves) const{};
 
     };
 
-
-    class BasicMoveSorter : public MoveSorter{
-    public:
-        BasicMoveSorter() = default;
-        void sortMovelist(Board& board, Movelist& moves) const override;
-    };
-
-    class PvMoveSorter : public MoveSorter{
-    public:
-
-        PvMoveSorter() = default;
-        void sortMovelist(Board& board, Movelist& moves) const override;
-        inline void setPv(Move& move) override {pv = move;};
-    };
-
-    class PvHistoryMoveSorter : public MoveSorter{
-    protected:
-        int (*historyTable)[2][64][64] = nullptr;
-    public:
-        inline void setHistoryTable(int (*table)[2][64][64]) override {historyTable = table;}
-        PvHistoryMoveSorter() = default;
-        void sortMovelist(Board& board, Movelist& moves) const override;
-        inline void setPv(Move& move) override {pv = move;};
-    };
-
-    class PvHistoryKillerMoveSorter : public MoveSorter{
-    protected:
-        int (*historyTable)[2][64][64] = nullptr;
-        Move (*killerMoves)[MAX_DEPTH][2] = nullptr;
-        int plyFromRoot = 0;
-    public:
-        inline void setHistoryTable(int (*table)[2][64][64]) override {historyTable = table;}
-        void sortMovelist(Board& board, Movelist& moves) const override;
-        inline void setPv(Move& move) override {pv = move;};
-        inline void setKillerMoves(Move (*table)[MAX_DEPTH][2]) override{killerMoves = table;}
-        PvHistoryKillerMoveSorter() = default;
-        inline void setDepths(int currDepth, int currPlyFromRoot) override{plyFromRoot = currPlyFromRoot;}
-    };
-
-    class PvHistoryKillerTTMoveSorter : public MoveSorter{
-    protected:
-        int (*historyTable)[2][64][64] = nullptr;
-        Move (*killerMoves)[MAX_DEPTH][2] = nullptr;
-        transpositions::TranspositionTable* TT = nullptr;
-        int plyFromRoot = 0;
-        int depth = 0;
-        Move pv;
-    public:
-        inline void setHistoryTable(int (*table)[2][64][64]) override {historyTable = table;}
-        void sortMovelist(Board& board, Movelist& moves) const override;
-        inline void setPv(Move& move) override{pv = move;};
-        inline void setKillerMoves(Move (*table)[MAX_DEPTH][2]) override{killerMoves = table;}
-        inline void setTT(transpositions::TranspositionTable* table)override {TT = table;}
-        PvHistoryKillerTTMoveSorter() = default;
-        inline void setDepths(int currDepth, int currPlyFromRoot) override{ plyFromRoot = currPlyFromRoot; depth = currDepth;}
-    };
 
     class negaMaxSorter : public MoveSorter{
     protected:
@@ -107,7 +48,7 @@ namespace sorters {
         int depth = 0;
         int (*historyTable)[2][64][64] = nullptr;
         Move (*killerMoves)[MAX_DEPTH][2] = nullptr;
-        Move* pv;
+        Move* pv = nullptr;
     public:
         void sortMovelist(Board& board, Movelist& moves) const override;
         inline void setHistoryTable(int (*table)[2][64][64]) override {historyTable = table;}
@@ -116,8 +57,6 @@ namespace sorters {
         inline void setKillerMoves(Move (*table)[MAX_DEPTH][2]) override{killerMoves = table;}
         negaMaxSorter() = default;
         inline void setDepths(int currDepth, int currPlyFromRoot) override{ plyFromRoot = currPlyFromRoot; depth = currDepth;}
-        inline Move selectNextMove(Movelist& moves, int startIndex) const override;
-        inline void setMoveScores(const Board& board, Movelist& moves) const override;
         void sortCaptures(const Board& board, Movelist& moves) const override;
     };
 

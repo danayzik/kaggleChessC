@@ -45,7 +45,6 @@ Color getColor(){
 
 
 int main() {
-
     string fen;
     initTables();
     Color color = getColor();
@@ -55,7 +54,6 @@ int main() {
     Evaluator* evaluator = new HeuristicEvaluator();
     Searcher* searcher = new negaMaxQSearcher(evaluator, isWhite);
     Engine myEngine = Engine(std::move(myBoard), color, evaluator, searcher);
-//    timeEval(*evaluator, myBoard);
     run(myEngine);
     return 0;
 }

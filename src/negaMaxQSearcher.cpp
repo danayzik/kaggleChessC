@@ -7,9 +7,6 @@ using namespace searchers;
 using namespace chess;
 
 
-
-
-
 negaMaxQSearcher::negaMaxQSearcher(Evaluator* evaluator, bool isWhite)
         : Searcher(evaluator, isWhite, std::make_unique<negaMaxSorter>()) {sorter->setHistoryTable(&historyTable); sorter->setKillerMoves(&killerMoves);}
 
@@ -69,7 +66,6 @@ int negaMaxQSearcher::negaMax(Board &board, int depth, int plyFromRoot, int alph
     Move childPV[MAX_DEPTH];
     sorter->setDepths(depth, plyFromRoot);
     sorter->sortMovelist(board, moves);
-//    sorter->setMoveScores(board, moves);
     int max_eval = NEGINF - 1;
     for (auto& move: moves) {
         board.makeMove(move);

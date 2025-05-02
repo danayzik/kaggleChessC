@@ -1,7 +1,0 @@
-b
-rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-e2e4
-d2d4
-g1f3
-b1c3
-end

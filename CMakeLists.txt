@@ -12,10 +12,6 @@ add_executable(chessBot
         src/engine.cpp
         src/sorters.cpp
         src/heuristic_evaluator.cpp
-        src/history_killer_pv_searcher.cpp
-        src/history_killer_pv_TT_searcher.cpp
-        src/negaMaxSearcher.cpp
         src/negaMaxQSearcher.cpp
-
 )
 
