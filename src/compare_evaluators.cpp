@@ -39,7 +39,7 @@ std::pair< float, float> normalize(std::vector<float>& data) {
 
 int main() {
     initTables();
-    std::ifstream file("D:/chess/train.csv");
+    std::ifstream file("D:/chess/train_static.csv");
     std::string line;
     std::vector<std::string> fens;
     std::vector<float> targets;
