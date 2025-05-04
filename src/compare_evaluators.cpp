@@ -39,7 +39,7 @@ std::pair< float, float> normalize(std::vector<float>& data) {
 
 int main() {
     initTables();
-    std::ifstream file("D:/chess/train_static.csv");
+    std::ifstream file("C:\\Users\\danay\\Desktop\\uni\\year4sem1\\workshop\\data.csv");
     std::string line;
     std::vector<std::string> fens;
     std::vector<float> targets;
@@ -58,8 +58,8 @@ int main() {
 
     // Take 80%-90% slice
     size_t N = fens.size();
-    size_t start = N * 8 / 10;
-    size_t end = N * 9 / 10;
+    size_t start = N * 9 / 10;
+    size_t end = N;
 
     std::vector<float> preds, actuals;
 
